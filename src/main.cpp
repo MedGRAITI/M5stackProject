@@ -91,7 +91,7 @@ void loop() {
     M5.Lcd.println("[SCD30] Error\n");
     Serial.println("[SCD30] Failed to read");
   } */
-   if (readSCD30(scd30_co2, scd30_temp, scd30_hum)) {
+  if (readSCD30(scd30_co2, scd30_temp, scd30_hum)) {
     Serial.printf("[SCD30] CO2: %.1f ppm | Temp: %.1f °C | RH: %.1f %%\n", scd30_co2, scd30_temp, scd30_hum);
     M5.Lcd.printf("[SCD30]\nCO2: %.1f ppm\nTemp: %.1f °C\nRH: %.1f %%\n\n", scd30_co2, scd30_temp, scd30_hum);
   } else {
