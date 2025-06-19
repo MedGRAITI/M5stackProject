@@ -3,8 +3,8 @@
 #include <WebServer.h>
 
 
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "M5Stack_CO2";
+const char* password = "123456789";
 
 WebServer server(80);
 
