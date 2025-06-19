@@ -29,17 +29,17 @@ void readSCD30() {
 #include <SensirionI2cScd30.h>
 #include <M5Core2.h>
 
-SensirionI2cScd30 scd30;
+SensirionI2cScd30 scd30;        //classe Sensirion de la bibliotheque de SensirionI2cScd30.h
 
 void initSCD30() {
-  scd30.begin(Wire, SCD30_I2C_ADDR_61);
+  scd30.begin(Wire, SCD30_I2C_ADDR_61);  //begin deux parametre : Wire SDA SCK de M5STACK et Adresse I2c de mon capteur
   scd30.stopPeriodicMeasurement();
   scd30.softReset();
   delay(2000);
   scd30.startPeriodicMeasurement(0);
 }
 
-bool readSCD30(float& co2, float& temperature, float& humidity) {
+bool readSCD30(float& co2, float& temperature, float& humidity) { //fonction de lecture de DATA
   uint16_t dataReady = 0;
   scd30.getDataReady(dataReady);
   if (!dataReady) return false;

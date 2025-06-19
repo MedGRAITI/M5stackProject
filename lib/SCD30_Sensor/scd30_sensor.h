@@ -1,9 +1,3 @@
-/* #pragma once
-
-void initSCD30();   // Fonction d'initialisation
-void readSCD30();   // Fonction de lecture des mesures */
-
-
 #ifndef SCD30_SENSOR_H
 #define SCD30_SENSOR_H
 

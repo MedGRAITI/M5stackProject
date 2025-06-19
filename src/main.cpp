@@ -76,7 +76,7 @@ void setup() {
   initSCD30();
   initSCD40();
   initSGP30();
-  mhz16.begin(9600);
+  mhz16.begin(9600);  
   M5.Lcd.setRotation(1);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setTextColor(WHITE, BLACK);

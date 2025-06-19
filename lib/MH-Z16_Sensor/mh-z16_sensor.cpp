@@ -53,7 +53,7 @@ int Mhz16::readCO2() {
   if (response[0] == 0xFF && response[1] == 0x86) {
     return response[2] * 256 + response[3];
   } else {
-    return -1;  // Erreur
+    return -1;  // Erreur de la lecture 
   }
 }
 
