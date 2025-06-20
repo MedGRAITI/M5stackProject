@@ -1,3 +1,11 @@
+/*      
+Nom du fichier : wifi_server.cpp
+Auteur :  GRAITI Mohammed
+Responsable : Laurent Oyhenart
+Materiel : M5stack Core 2,
+Description : Fichier cpp de la communication wifi, partage d'un point acces, "M5STACK_CO2", "12345678",Avec une server HTML 192.168.4.1
+*/ 
+
 #include "wifi_server.h"
 #include <WiFi.h>
 #include <WebServer.h>
@@ -13,7 +21,7 @@ uint16_t g_sgp30_eco2 = 0, g_sgp30_tvoc = 0;
 int g_mhz16_co2 = 0;
 
 void setupWiFi() {
-  WiFi.mode(WIFI_AP);  // Important pour activer le mode point d'accès
+  WiFi.mode(WIFI_AP);  // activer le mode point d'accès
   WiFi.softAP("M5STACK_CO2", "12345678");
 
   Serial.println("[WiFi] Point d’accès créé : M5STACK_CO2");

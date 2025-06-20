@@ -1,3 +1,10 @@
+/*      
+Nom du fichier : wifi_server.h
+Auteur :  GRAITI Mohammed
+Responsable : Laurent Oyhenart
+Materiel : M5stack Core 2,
+Description : Fichier Header de la communication wifi, 
+*/ 
 #pragma once
 #include <WiFi.h>
 #include <WebServer.h>

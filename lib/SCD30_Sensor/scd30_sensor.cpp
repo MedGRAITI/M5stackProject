@@ -1,29 +1,11 @@
-/* #include "scd30_sensor.h"
-#include <Wire.h>
-#include <SensirionI2CScd30.h>
-#include <M5Core2.h>
+/*      
+Nom du fichier : scd30_sensor.cpp
+Auteur :  GRAITI Mohammed
+Responsable : Laurent Oyhenart
+Materiel : M5stack Core 2,  Capteur scd30
+Description : Fichier cpp de capteur scd30 Communication I2C,  Adresse par defaut 0x61
+*/ 
 
-SensirionI2cScd30 scd30;
-
-
-void initSCD30() {
-    scd30.begin(Wire,0x61);
-    scd30.startPeriodicMeasurement(1025);
-}
-
-void readSCD30() {
-    float co2;
-    float temp, humidity;
-
-    if (scd30.readMeasurementData(co2, temp, humidity) == 0) {
-        Serial.printf("[SCD30] CO2: %d ppm | Temp: %.1f °C | RH: %.1f %%\n", co2, temp, humidity);
-        M5.Lcd.printf("[SCD30]\nCO2: %d ppm\nTemp: %.1f °C\nRH: %.1f %%\n\n", (int)co2, temp, humidity);
-    } else {
-        Serial.println("[SCD30] Failed to read measurement.");
-        M5.Lcd.println("[SCD30] Failed");
-    }
-}
-  */
 #include "scd30_sensor.h"
 #include <Wire.h>
 #include <SensirionI2cScd30.h>
@@ -32,14 +14,14 @@ void readSCD30() {
 SensirionI2cScd30 scd30;        //classe Sensirion de la bibliotheque de SensirionI2cScd30.h
 
 void initSCD30() {
-  scd30.begin(Wire, SCD30_I2C_ADDR_61);  //begin deux parametre : Wire SDA SCK de M5STACK et Adresse I2c de mon capteur
+  scd30.begin(Wire, SCD30_I2C_ADDR_61);  //begin deux parametre : Wire (SDA,SCK) de M5STACK et Adresse I2c de mon capteur
   scd30.stopPeriodicMeasurement();
   scd30.softReset();
   delay(2000);
   scd30.startPeriodicMeasurement(0);
 }
 
-bool readSCD30(float& co2, float& temperature, float& humidity) { //fonction de lecture de DATA
+bool readSCD30(float& co2, float& temperature, float& humidity) { //fonction de lecture de DATA 3 parametre CO2, temp, hum
   uint16_t dataReady = 0;
   scd30.getDataReady(dataReady);
   if (!dataReady) return false;

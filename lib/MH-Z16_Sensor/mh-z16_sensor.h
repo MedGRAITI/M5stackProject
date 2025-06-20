@@ -1,3 +1,11 @@
+/*      
+Nom du fichier : mh-z16_sensor.h
+Auteur :  GRAITI Mohammed
+Responsable : Laurent Oyhenart
+Materiel : M5stack Core 2,  Capteur MH Z16
+Description : Fichier Header de capteur MH-Z16 Communication série (UART), deux trame de donnée envoyé pour la lecture de Co2,
+*/ 
+
 #ifndef MHZ16_SENSOR_H
 #define MHZ16_SENSOR_H
 
