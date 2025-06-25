@@ -29,7 +29,8 @@ void setupWiFi() {
   Serial.println(WiFi.softAPIP());
 
   server.on("/", []() {
-    String page = "<h2>Données Capteurs CO2</h2>";
+    String page = "<html><head><meta http-equiv='refresh' content='5'></head><body>";
+    page += "<h2>Données Capteurs CO2</h2>";
 
     page += "<h3>SCD30</h3>";
     page += "CO2: " + String(g_scd30_co2) + " ppm<br>";
@@ -47,6 +48,8 @@ void setupWiFi() {
 
     page += "<h3>MH-Z16</h3>";
     page += "CO2: " + String(g_mhz16_co2) + " ppm<br>";
+
+    page += "</body></html>";
 
     server.send(200, "text/html", page);
   });

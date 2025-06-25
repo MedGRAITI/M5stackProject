@@ -32,7 +32,7 @@ void setup() {
   initSCD30();
   initSCD40();
   initSGP30();
-  mhz16.begin(9600);  
+  mhz16.begin(9600);
   M5.Lcd.setRotation(1);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setTextColor(WHITE, BLACK);
@@ -42,36 +42,37 @@ void loop() {
   M5.Lcd.clear();
   M5.Lcd.setCursor(0, 0);
 
-/*   float co2, temp, hum;
-  if (!readSCD30(co2, temp, hum)) {
-    M5.Lcd.println("[SCD30] Error\n");
-    Serial.println("[SCD30] Failed to read");
-  } */
-  if (readSCD30(scd30_co2, scd30_temp, scd30_hum)) {
-    Serial.printf("[SCD30] CO2: %.1f ppm | Temp: %.1f °C | RH: %.1f %%\n", scd30_co2, scd30_temp, scd30_hum);
+  if (readSCD30(scd30_co2, scd30_temp, scd30_hum)){
     M5.Lcd.printf("[SCD30]\nCO2: %.1f ppm\nTemp: %.1f °C\nRH: %.1f %%\n\n", scd30_co2, scd30_temp, scd30_hum);
+    Serial.printf("[SCD30] CO2: %.1f ppm | Temp: %.1f °C | RH: %.1f %%\n", scd30_co2, scd30_temp, scd30_hum);
   } else {
-    Serial.println("[SCD30] Lecture échouée");
     M5.Lcd.println("[SCD30] Erreur\n");
+    Serial.println("[SCD30] Lecture échouée");
   }
-  readSCD40();
-  readSGP30();
 
-/*   int co2ppm = mhz16.readCO2();
-  if (co2ppm > 0) {
-    M5.Lcd.printf("[MH-Z16]\nCO2: %d ppm\n", co2ppm);
-    Serial.printf("[MH-Z16] CO2: %d ppm\n", co2ppm);
+  if (readSCD40(scd40_co2, scd40_temp, scd40_hum)) {
+    M5.Lcd.printf("[SCD40]\nCO2: %d ppm\nTemp: %.2f °C\nRH: %.2f %%\n\n", scd40_co2, scd40_temp, scd40_hum);
+    Serial.printf("[SCD40] CO2: %d ppm | Temp: %.2f °C | RH: %.2f %%\n", scd40_co2, scd40_temp, scd40_hum);
   } else {
-    M5.Lcd.println("[MH-Z16] Error\n");
-    Serial.println("[MH-Z16] Failed to read");
-  } */
+    M5.Lcd.println("[SCD40] Erreur\n");
+    Serial.println("[SCD40] Lecture échouée");
+  }
+
+  if (readSGP30(sgp30_eco2, sgp30_tvoc)) {
+    M5.Lcd.printf("[SGP30]\neCO2: %d ppm\nTVOC: %d ppb\n\n", sgp30_eco2, sgp30_tvoc);
+    Serial.printf("[SGP30] eCO2: %d ppm | TVOC: %d ppb\n", sgp30_eco2, sgp30_tvoc);
+  } else {
+    M5.Lcd.println("[SGP30] Erreur\n");
+    Serial.println("[SGP30] Lecture échouée");
+  }
+
   mhz16_co2 = mhz16.readCO2();
   if (mhz16_co2 > 0) {
-    Serial.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
     M5.Lcd.printf("[MH-Z16]\nCO2: %d ppm\n", mhz16_co2);
+    Serial.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
   } else {
-    Serial.println("[MH-Z16] Lecture échouée");
     M5.Lcd.println("[MH-Z16] Erreur");
+    Serial.println("[MH-Z16] Lecture échouée");
   }
 
   updateSensorValues(

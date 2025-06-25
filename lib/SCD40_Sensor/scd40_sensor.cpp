@@ -21,20 +21,20 @@ void initSCD40() {  // Initialisation de capteur,
     scd4x.startPeriodicMeasurement();
 }
 
-void readSCD40() {  // fonction de la lecture de DATA
+bool readSCD40(uint16_t& co2, float& temp, float& humidity) {  // fonction de la lecture de DATA
     bool isDataReady = false;
     scd4x.getDataReadyStatus(isDataReady);
-    if (!isDataReady) return;
+    if (!isDataReady) return false;
 
-    uint16_t co2;
-    float temp, humidity;
     uint16_t error = scd4x.readMeasurement(co2, temp, humidity);
 
     if (error) {
         Serial.println("[SCD40] Read failed");
         M5.Lcd.println("[SCD40] Failed\n");
+        return false;
     } else {
         Serial.printf("[SCD40] CO2: %d ppm | Temp: %.2f °C | RH: %.2f %%\n", co2, temp, humidity);
         M5.Lcd.printf("[SCD40]\nCO2: %d ppm\nTemp: %.2f °C\nRH: %.2f %%\n\n", co2, temp, humidity);
+        return true;
     }
 }

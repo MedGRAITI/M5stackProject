@@ -7,6 +7,8 @@ Description : Fichier Header de capteur scd40 Communication I2C,
 */ 
 
 #pragma once
+#include <Arduino.h>
+#include <stdint.h>
 
 void initSCD40();
-void readSCD40();
+bool readSCD40(uint16_t &co2, float& temp, float& humidity);
