@@ -1,10 +1,10 @@
-/*      
+/*
 Nom du fichier : main.cpp
 Auteur :  GRAITI Mohammed
 Responsable : Laurent Oyhenart
 Materiel : M5stack Core 2, MHZ16, SCD30, SCD40, SGP30,
 Description : Fichier main de mon projet
-*/ 
+*/
 #include <Arduino.h>
 #include <Wire.h>
 #include <M5Core2.h>
