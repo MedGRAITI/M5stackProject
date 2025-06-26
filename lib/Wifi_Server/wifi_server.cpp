@@ -7,11 +7,15 @@ Description : Fichier cpp de la communication wifi, partage d'un point acces, "M
 */ 
 
 #include "wifi_server.h"
+#include "page_html.h"
 #include <WiFi.h>
 #include <WebServer.h>
+#include <SPIFFS.h>
 
 // Serveur web sur port 80
 WebServer server(80);
+bool measurementActive = false;
+
 
 // Variables partagées
 float g_scd30_co2 = 0.0, g_scd30_temp = 0.0, g_scd30_hum = 0.0;
@@ -28,7 +32,7 @@ void setupWiFi() {
   Serial.print("[WiFi] Adresse IP : ");
   Serial.println(WiFi.softAPIP());
 
-  server.on("/", []() {
+/*   server.on("/", []() {
     String page = "<html><head><meta http-equiv='refresh' content='5'></head><body>";
     page += "<h2>Données Capteurs CO2</h2>";
 
@@ -54,8 +58,49 @@ void setupWiFi() {
     server.send(200, "text/html", page);
   });
 
+  server.begin();*/
+    server.on("/", []() {
+    server.send(200, "text/html", htmlPage);
+  });
+
+  server.on("/start", []() {
+    measurementActive = true;
+    server.send(200, "text/plain", "OK");
+  });
+
+  server.on("/stop", []() {
+    measurementActive = false;
+    server.send(200, "text/plain", "STOP");
+  });
+
+  server.on("/download", []() {
+    File f = SPIFFS.open("/mesures.csv", "r");
+    if (!f) {
+      server.send(404, "text/plain", "Fichier non trouvé");
+      return;
+    }
+    server.streamFile(f, "text/csv");
+    f.close();
+  });
+
+  server.on("/data", []() {
+    String json = "{";
+    json += "\"time\":" + String(millis() / 1000) + ",";
+    json += "\"scd30_co2\":" + String(g_scd30_co2) + ",";
+    json += "\"scd30_temp\":" + String(g_scd30_temp) + ",";
+    json += "\"scd30_hum\":" + String(g_scd30_hum) + ",";
+    json += "\"scd40_co2\":" + String(g_scd40_co2) + ",";
+    json += "\"scd40_temp\":" + String(g_scd40_temp) + ",";
+    json += "\"scd40_hum\":" + String(g_scd40_hum) + ",";
+    json += "\"sgp30_eco2\":" + String(g_sgp30_eco2) + ",";
+    json += "\"sgp30_tvoc\":" + String(g_sgp30_tvoc) + ",";
+    json += "\"mhz16_co2\":" + String(g_mhz16_co2);
+    json += "}";
+    server.send(200, "application/json", json);
+  });
+
   server.begin();
-}
+} 
 
 void handleClient() {
   server.handleClient();

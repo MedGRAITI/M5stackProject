@@ -24,3 +24,5 @@ void updateSensorValues(
     uint16_t sgp30_eco2, uint16_t sgp30_tvoc,
     int mhz16_co2
 );
+extern bool measurementActive;
+

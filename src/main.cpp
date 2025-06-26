@@ -8,6 +8,9 @@ Description : Fichier main de mon projet
 #include <Arduino.h>
 #include <Wire.h>
 #include <M5Core2.h>
+#include <FS.h>
+#include <SPIFFS.h>
+
 #include "scd30_sensor.h"
 #include "scd40_sensor.h"
 #include "sgp30_sensor.h"
@@ -24,6 +27,8 @@ float scd40_temp = 0.0, scd40_hum = 0.0;
 uint16_t sgp30_eco2 = 0, sgp30_tvoc = 0;
 int mhz16_co2 = 0;
 
+extern bool measurementActive;
+
 void setup() {
   M5.begin();
   Serial.begin(115200);
@@ -33,12 +38,19 @@ void setup() {
   initSCD40();
   initSGP30();
   mhz16.begin(9600);
+
   M5.Lcd.setRotation(1);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setTextColor(WHITE, BLACK);
+
+  File f = SPIFFS.open("/mesures.csv", FILE_WRITE);
+  if (f.size() == 0) {
+    f.println("time;scd30_co2;scd30_temp;scd30_hum;scd40_co2;scd40_temp;scd40_hum;sgp30_eco2;sgp30_tvoc;mhz16_co2");
+  }
+  f.close();
 }
 
-void loop() {
+/* void loop() {
   M5.Lcd.clear();
   M5.Lcd.setCursor(0, 0);
 
@@ -84,4 +96,43 @@ void loop() {
 
   handleClient();
   delay(3000);
+} */
+
+void loop() {
+  M5.Lcd.clear();
+  M5.Lcd.setCursor(0, 0);
+
+  readSCD30(scd30_co2, scd30_temp, scd30_hum);
+  readSCD40(scd40_co2, scd40_temp, scd40_hum);
+  readSGP30(sgp30_eco2, sgp30_tvoc);
+  mhz16_co2 = mhz16.readCO2();
+
+  M5.Lcd.printf("[SCD30] CO2: %.1f ppm\nTemp: %.1f °C\nRH: %.1f %%\n\n", scd30_co2, scd30_temp, scd30_hum);
+  M5.Lcd.printf("[SCD40] CO2: %d ppm\nTemp: %.2f °C\nRH: %.2f %%\n\n", scd40_co2, scd40_temp, scd40_hum);
+  M5.Lcd.printf("[SGP30] eCO2: %d ppm\nTVOC: %d ppb\n\n", sgp30_eco2, sgp30_tvoc);
+  M5.Lcd.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
+
+  updateSensorValues(
+    scd30_co2, scd30_temp, scd30_hum,
+    scd40_co2, scd40_temp, scd40_hum,
+    sgp30_eco2, sgp30_tvoc,
+    mhz16_co2
+  );
+
+  if (measurementActive) {
+    File f = SPIFFS.open("/mesures.csv", FILE_APPEND);
+    if (f) {
+      f.printf("%lu;%.1f;%.1f;%.1f;%d;%.2f;%.2f;%d;%d;%d\n",
+        millis() / 1000,
+        scd30_co2, scd30_temp, scd30_hum,
+        scd40_co2, scd40_temp, scd40_hum,
+        sgp30_eco2, sgp30_tvoc,
+        mhz16_co2
+      );
+      f.close();
+    }
+  }
+
+  handleClient();
+  delay(5000);
 }
