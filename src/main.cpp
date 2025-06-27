@@ -31,6 +31,7 @@ extern bool measurementActive;
 
 void setup() {
   M5.begin();
+  SPIFFS.begin(true);
   Serial.begin(115200);
   Wire.begin();
   setupWiFi();
