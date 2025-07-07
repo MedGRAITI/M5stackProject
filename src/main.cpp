@@ -31,24 +31,31 @@ extern bool measurementActive;
 
 void setup() {
   M5.begin();
-  SPIFFS.begin(true);
+  if (!SPIFFS.begin(true)) {
+    Serial.println("Erreur SPIFFS");
+    while (1);
+  }
   Serial.begin(115200);
   Wire.begin();
   setupWiFi();
   initSCD30();
   initSCD40();
   initSGP30();
+  mhzSerial.begin(9600, SERIAL_8N1, 13, 14);
   mhz16.begin(9600);
 
   M5.Lcd.setRotation(1);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setTextColor(WHITE, BLACK);
 
-  File f = SPIFFS.open("/mesures.csv", FILE_WRITE);
-  if (f.size() == 0) {
-    f.println("time;scd30_co2;scd30_temp;scd30_hum;scd40_co2;scd40_temp;scd40_hum;sgp30_eco2;sgp30_tvoc;mhz16_co2");
+  File fw = SPIFFS.open("/mesures.csv", FILE_WRITE);
+  if (fw) {
+    fw.println("time;scd30_co2;scd30_temp;scd30_hum;scd40_co2;scd40_temp;scd40_hum;sgp30_eco2;sgp30_tvoc;mhz16_co2");
+    fw.close();
+    Serial.println("[SPIFFS] Fichier CSV réinitialisé.");
+  } else {
+    Serial.println("[SPIFFS] Erreur création fichier CSV.");
   }
-  f.close();
 }
 
 /* void loop() {
@@ -99,7 +106,8 @@ void setup() {
   delay(3000);
 } */
 
-void loop() {
+void loop()
+{
   M5.Lcd.clear();
   M5.Lcd.setCursor(0, 0);
 
@@ -107,11 +115,18 @@ void loop() {
   readSCD40(scd40_co2, scd40_temp, scd40_hum);
   readSGP30(sgp30_eco2, sgp30_tvoc);
   mhz16_co2 = mhz16.readCO2();
+  if (mhz16_co2 > 0) {
+  M5.Lcd.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
+  Serial.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
+  } else {
+  M5.Lcd.println("[MH-Z16] Erreur");
+  Serial.println("[MH-Z16] Lecture échouée");
+  }
 
   M5.Lcd.printf("[SCD30] CO2: %.1f ppm\nTemp: %.1f °C\nRH: %.1f %%\n\n", scd30_co2, scd30_temp, scd30_hum);
   M5.Lcd.printf("[SCD40] CO2: %d ppm\nTemp: %.2f °C\nRH: %.2f %%\n\n", scd40_co2, scd40_temp, scd40_hum);
   M5.Lcd.printf("[SGP30] eCO2: %d ppm\nTVOC: %d ppb\n\n", sgp30_eco2, sgp30_tvoc);
-  M5.Lcd.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
+  //M5.Lcd.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
 
   updateSensorValues(
     scd30_co2, scd30_temp, scd30_hum,
@@ -135,5 +150,5 @@ void loop() {
   }
 
   handleClient();
-  delay(5000);
+  delay(3000);
 }

@@ -22,6 +22,7 @@ void initSGP30() {
     }
     sgp.IAQinit();
     delay(1000);
+    sgp.setHumidity(0);
     Serial.println("[SGP30] Sensor initialized");
 }
 
@@ -34,7 +35,10 @@ bool readSGP30(uint16_t& eco2, uint16_t& tvoc) {
     }
     eco2 = sgp.eCO2;
     tvoc = sgp.TVOC;
-
+    if (eco2 == 400 && tvoc == 0) {
+        Serial.println("[SGP30] Still warming up...");
+        return false;
+    }
     Serial.printf("[SGP30] eCO2: %d ppm | TVOC: %d ppb\n", eco2, tvoc);
     M5.Lcd.printf("[SGP30]\neCO2: %d ppm\nTVOC: %d ppb\n\n", eco2, tvoc);
     return true;
