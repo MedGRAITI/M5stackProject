@@ -15,6 +15,7 @@ Description : Fichier main de mon projet
 #include "scd40_sensor.h"
 #include "sgp30_sensor.h"
 #include "mh-z16_sensor.h"
+#include "Laser_pm2-5.h"
 #include "wifi_server.h"
 
 
@@ -26,6 +27,7 @@ uint16_t scd40_co2 = 0;
 float scd40_temp = 0.0, scd40_hum = 0.0;
 uint16_t sgp30_eco2 = 0, sgp30_tvoc = 0;
 int mhz16_co2 = 0;
+uint16_t pm1 = 0, pm2_5 = 0, pm10 = 0;
 
 extern bool measurementActive;
 
@@ -41,6 +43,8 @@ void setup() {
   initSCD30();
   initSCD40();
   initSGP30();
+  initHM3301();
+
   mhzSerial.begin(9600, SERIAL_8N1, 13, 14);
   mhz16.begin(9600);
 
@@ -50,7 +54,7 @@ void setup() {
 
   File fw = SPIFFS.open("/mesures.csv", FILE_WRITE);
   if (fw) {
-    fw.println("time;scd30_co2;scd30_temp;scd30_hum;scd40_co2;scd40_temp;scd40_hum;sgp30_eco2;sgp30_tvoc;mhz16_co2");
+    fw.println("time;scd30_co2;scd30_temp;scd30_hum;scd40_co2;scd40_temp;scd40_hum;sgp30_eco2;sgp30_tvoc;mhz16_co2;pm1;pm2_5;pm10");
     fw.close();
     Serial.println("[SPIFFS] Fichier CSV réinitialisé.");
   } else {
@@ -115,6 +119,8 @@ void loop()
   readSCD40(scd40_co2, scd40_temp, scd40_hum);
   readSGP30(sgp30_eco2, sgp30_tvoc);
   mhz16_co2 = mhz16.readCO2();
+  readHM3301(pm1, pm2_5, pm10);
+
   if (mhz16_co2 > 0) {
   M5.Lcd.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
   Serial.printf("[MH-Z16] CO2: %d ppm\n", mhz16_co2);
@@ -138,17 +144,18 @@ void loop()
   if (measurementActive) {
     File f = SPIFFS.open("/mesures.csv", FILE_APPEND);
     if (f) {
-      f.printf("%lu;%.1f;%.1f;%.1f;%d;%.2f;%.2f;%d;%d;%d\n",
+      f.printf("%lu;%.1f;%.1f;%.1f;%d;%.2f;%.2f;%d;%d;%d;%u;%u;%u\n",
         millis() / 1000,
         scd30_co2, scd30_temp, scd30_hum,
         scd40_co2, scd40_temp, scd40_hum,
         sgp30_eco2, sgp30_tvoc,
-        mhz16_co2
+        mhz16_co2,
+        pm1, pm2_5, pm10
       );
       f.close();
     }
   }
 
   handleClient();
-  delay(3000);
+  delay(5000);
 }
