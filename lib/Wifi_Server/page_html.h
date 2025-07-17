@@ -67,6 +67,9 @@ const char* htmlPage = R"rawliteral(
       border-radius: 10px;
       box-shadow: 0 0 15px #00000088;
     }
+    p {
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -81,11 +84,53 @@ const char* htmlPage = R"rawliteral(
     <button class="download-btn" onclick="downloadCSV()">⬇ Télécharger CSV</button>
     <button class="reset-btn" onclick="resetCSV()">♻ Réinitialiser CSV</button>
   </div>
+
   <div class="grid-container">
-    <canvas id="scd30Chart"></canvas>
-    <canvas id="scd40Chart"></canvas>
-    <canvas id="sgp30Chart"></canvas>
-    <canvas id="mhz16Chart"></canvas>
+    <div>
+      <canvas id="scd30Chart"></canvas>
+      <div style="text-align:center; font-weight:bold; margin-top:5px;">
+        <span style="color:#00bfff;">🟦 CO₂ (ppm)</span> |
+        <span style="color:#ff9900;">🟧 Température (°C)</span> |
+        <span style="color:#66ff66;">🟩 Humidité (%)</span>
+      </div>
+      <p id="scd30Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+    </div>
+
+    <div>
+      <canvas id="scd40Chart"></canvas>
+      <div style="text-align:center; font-weight:bold; margin-top:5px;">
+        <span style="color:#ffa500;">🟧 CO₂ (ppm)</span> |
+        <span style="color:#ffcc00;">🟨 Température (°C)</span> |
+        <span style="color:#00cc66;">🟩 Humidité (%)</span>
+      </div>
+      <p id="scd40Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+    </div>
+
+    <div>
+      <canvas id="sgp30Chart"></canvas>
+      <div style="text-align:center; font-weight:bold; margin-top:5px;">
+        <span style="color:#32cd32;">🟩 eCO₂ (ppm)</span>
+      </div>
+      <p id="sgp30Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+    </div>
+
+    <div>
+      <canvas id="mhz16Chart"></canvas>
+      <div style="text-align:center; font-weight:bold; margin-top:5px;">
+        <span style="color:#ff69b4;">🟪 MH-Z16 CO₂ (ppm)</span>
+      </div>
+      <p id="mhz16Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+    </div>
+
+    <div>
+      <canvas id="pmChart"></canvas>
+      <div style="text-align:center; font-weight:bold; margin-top:5px;">
+        <span style="color:#ff0000;">🟥 PM1</span> |
+        <span style="color:#00ff00;">🟩 PM2.5</span> |
+        <span style="color:#0000ff;">🟦 PM10</span>
+      </div>
+      <p id="pmValue" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+    </div>
   </div>
 
 <script>
@@ -112,21 +157,24 @@ function resetCSV() {
   }
 }
 
-function createChart(ctx, label, color) {
+function createMultiChart(ctx, labels, colors, yTitle) {
+  const datasets = labels.map((label, index) => {
+    let yAxisID = (label.includes("Temp") || label.includes("Hum")) ? "y2" : "y";
+    return {
+      label: label,
+      borderColor: colors[index],
+      backgroundColor: colors[index] + '33',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 3,
+      data: [],
+      yAxisID: yAxisID
+    };
+  });
+
   return new Chart(ctx, {
     type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: label,
-        borderColor: color,
-        backgroundColor: color + '33',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        data: []
-      }]
-    },
+    data: { labels: [], datasets: datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -141,52 +189,54 @@ function createChart(ctx, label, color) {
             }
           },
           grid: { display: false },
-          title: {
-            display: true,
-            text: 'Temps (hh:mm:ss)',
-            color: '#ccc',
-            font: { weight: 'bold' }
-          }
+          title: { display: true, text: 'Temps (hh:mm:ss)', color: '#ccc', font: { weight: 'bold' } }
         },
         y: {
-          ticks: {
-            color: '#ccc',
-            callback: function(value) {
-              return value + ' ppm';
-            }
-          },
-          grid: { display: false },
-          title: {
-            display: true,
-            text: 'CO₂ (ppm)',
-            color: '#ccc',
-            font: { weight: 'bold' }
-          }
+          type: 'linear',
+          position: 'left',
+          title: { display: true, text: yTitle, color: '#ccc', font: { weight: 'bold' } },
+          ticks: { color: '#ccc' },
+          grid: { display: false }
+        },
+        y2: {
+          type: 'linear',
+          position: 'right',
+          title: { display: true, text: 'Temp (°C) / RH (%)', color: '#ccc', font: { weight: 'bold' } },
+          ticks: { color: '#ccc' },
+          grid: { drawOnChartArea: false }
         }
       },
       plugins: {
-        legend: {
-          labels: { color: color }
-        }
+        legend: { display: false }
       }
     }
   });
 }
 
-// Données
 let labels = [];
-let scd30Data = { co2: [] };
-let scd40Data = { co2: [] };
+let scd30Data = { co2: [], temp: [], hum: [] };
+let scd40Data = { co2: [], temp: [], hum: [] };
 let sgp30Data = { eco2: [] };
 let mhz16Data = [];
+let pmData = { pm1: [], pm2_5: [], pm10: [] };
 
-// Création des graphiques
-let scd30Chart = createChart(document.getElementById('scd30Chart').getContext('2d'), "SCD30 CO₂ (ppm)", "#00bfff");
-let scd40Chart = createChart(document.getElementById('scd40Chart').getContext('2d'), "SCD40 CO₂ (ppm)", "#ffa500");
-let sgp30Chart = createChart(document.getElementById('sgp30Chart').getContext('2d'), "SGP30 eCO₂ (ppm)", "#32cd32");
-let mhz16Chart = createChart(document.getElementById('mhz16Chart').getContext('2d'), "MH-Z16 CO₂ (ppm)", "#ff69b4");
+let scd30Chart = createMultiChart(document.getElementById('scd30Chart').getContext('2d'),
+  ["CO₂ (ppm)", "Température (°C)", "Humidité (%)"],
+  ["#00bfff", "#ff9900", "#66ff66"], "CO₂ (ppm)");
 
-// Rafraîchissement toutes les 5 secondes
+let scd40Chart = createMultiChart(document.getElementById('scd40Chart').getContext('2d'),
+  ["CO₂ (ppm)", "Température (°C)", "Humidité (%)"],
+  ["#ffa500", "#ffcc00", "#00cc66"], "CO₂ (ppm)");
+
+let sgp30Chart = createMultiChart(document.getElementById('sgp30Chart').getContext('2d'),
+  ["eCO₂ (ppm)"], ["#32cd32"], "eCO₂ (ppm)");
+
+let mhz16Chart = createMultiChart(document.getElementById('mhz16Chart').getContext('2d'),
+  ["MH-Z16 CO₂ (ppm)"], ["#ff69b4"], "CO₂ (ppm)");
+
+let pmChart = createMultiChart(document.getElementById('pmChart').getContext('2d'),
+  ["PM1", "PM2.5", "PM10"], ["#ff0000", "#00ff00", "#0000ff"], "µg/m³");
+
 setInterval(() => {
   fetch('/data')
     .then(res => res.json())
@@ -195,24 +245,37 @@ setInterval(() => {
       labels.push(t);
       if (labels.length > 20) labels.shift();
 
-      scd30Data.co2.push(parseFloat(data.scd30_co2 || 0));
-      if (scd30Data.co2.length > 20) scd30Data.co2.shift();
+      scd30Data.co2.push(data.scd30_co2 || 0);
+      scd30Data.temp.push(data.scd30_temp || 0);
+      scd30Data.hum.push(data.scd30_hum || 0);
+      if (scd30Data.co2.length > 20) { scd30Data.co2.shift(); scd30Data.temp.shift(); scd30Data.hum.shift(); }
 
-      scd40Data.co2.push(parseFloat(data.scd40_co2 || 0));
-      if (scd40Data.co2.length > 20) scd40Data.co2.shift();
+      scd40Data.co2.push(data.scd40_co2 || 0);
+      scd40Data.temp.push(data.scd40_temp || 0);
+      scd40Data.hum.push(data.scd40_hum || 0);
+      if (scd40Data.co2.length > 20) { scd40Data.co2.shift(); scd40Data.temp.shift(); scd40Data.hum.shift(); }
 
-      sgp30Data.eco2.push(parseFloat(data.sgp30_eco2 || 0));
+      sgp30Data.eco2.push(data.sgp30_eco2 || 0);
       if (sgp30Data.eco2.length > 20) sgp30Data.eco2.shift();
 
-      mhz16Data.push(parseFloat(data.mhz16_co2 || 0));
+      mhz16Data.push(data.mhz16_co2 || 0);
       if (mhz16Data.length > 20) mhz16Data.shift();
+
+      pmData.pm1.push(data.pm1 || 0);
+      pmData.pm2_5.push(data.pm2_5 || 0);
+      pmData.pm10.push(data.pm10 || 0);
+      if (pmData.pm1.length > 20) { pmData.pm1.shift(); pmData.pm2_5.shift(); pmData.pm10.shift(); }
 
       scd30Chart.data.labels = labels;
       scd30Chart.data.datasets[0].data = scd30Data.co2;
+      scd30Chart.data.datasets[1].data = scd30Data.temp;
+      scd30Chart.data.datasets[2].data = scd30Data.hum;
       scd30Chart.update();
 
       scd40Chart.data.labels = labels;
       scd40Chart.data.datasets[0].data = scd40Data.co2;
+      scd40Chart.data.datasets[1].data = scd40Data.temp;
+      scd40Chart.data.datasets[2].data = scd40Data.hum;
       scd40Chart.update();
 
       sgp30Chart.data.labels = labels;
@@ -222,6 +285,19 @@ setInterval(() => {
       mhz16Chart.data.labels = labels;
       mhz16Chart.data.datasets[0].data = mhz16Data;
       mhz16Chart.update();
+
+      pmChart.data.labels = labels;
+      pmChart.data.datasets[0].data = pmData.pm1;
+      pmChart.data.datasets[1].data = pmData.pm2_5;
+      pmChart.data.datasets[2].data = pmData.pm10;
+      pmChart.update();
+
+      document.getElementById('scd30Value').textContent = `CO₂: ${scd30Data.co2.at(-1)} ppm | Temp: ${scd30Data.temp.at(-1)} °C | Hum: ${scd30Data.hum.at(-1)} %`;
+      document.getElementById('scd40Value').textContent = `CO₂: ${scd40Data.co2.at(-1)} ppm | Temp: ${scd40Data.temp.at(-1)} °C | Hum: ${scd40Data.hum.at(-1)} %`;
+      document.getElementById('sgp30Value').textContent = `eCO₂: ${sgp30Data.eco2.at(-1)} ppm`;
+      document.getElementById('mhz16Value').textContent = `MH-Z16 CO₂: ${mhz16Data.at(-1)} ppm`;
+      document.getElementById('pmValue').textContent = `PM1: ${pmData.pm1.at(-1)} µg/m³ | PM2.5: ${pmData.pm2_5.at(-1)} µg/m³ | PM10: ${pmData.pm10.at(-1)} µg/m³`;
+
     })
     .catch(error => console.error("❌ Erreur fetch /data :", error));
 }, 5000);

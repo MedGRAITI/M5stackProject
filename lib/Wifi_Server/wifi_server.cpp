@@ -171,6 +171,7 @@ uint16_t g_scd40_co2 = 0;
 float g_scd40_temp = 0.0, g_scd40_hum = 0.0;
 uint16_t g_sgp30_eco2 = 0, g_sgp30_tvoc = 0;
 int g_mhz16_co2 = 0;
+uint16_t pm1 = 0, pm2_5 = 0, pm10 = 0;
 
 void setupWiFi() {
   WiFi.mode(WIFI_STA);
@@ -251,7 +252,10 @@ void setupWiFi() {
     json += "\"scd40_hum\":" + String(g_scd40_hum, 1) + ",";
     json += "\"sgp30_eco2\":" + String(g_sgp30_eco2) + ",";
     json += "\"sgp30_tvoc\":" + String(g_sgp30_tvoc) + ",";
-    json += "\"mhz16_co2\":" + String(g_mhz16_co2);
+    json += "\"mhz16_co2\":" + String(g_mhz16_co2)+ ",";
+    json += "\"pm1\":" + String(pm1) + ",";
+    json += "\"pm2_5\":" + String(pm2_5) + ",";
+    json += "\"pm10\":" + String(pm10);
     json += "}";
 
     server.send(200, "application/json", json);
@@ -272,7 +276,8 @@ void updateSensorValues(
   float scd30_co2, float scd30_temp, float scd30_hum,
   uint16_t scd40_co2, float scd40_temp, float scd40_hum,
   uint16_t sgp30_eco2, uint16_t sgp30_tvoc,
-  int mhz16_co2
+  int mhz16_co2,
+  uint16_t pm1_, uint16_t pm2_5_, uint16_t pm10_
 ) {
   g_scd30_co2 = scd30_co2;
   g_scd30_temp = scd30_temp;
@@ -286,4 +291,8 @@ void updateSensorValues(
   g_sgp30_tvoc = sgp30_tvoc;
 
   g_mhz16_co2 = mhz16_co2;
+
+  pm1 = pm1_;
+  pm2_5 = pm2_5_;
+  pm10 = pm10_;
 }

@@ -27,7 +27,8 @@ uint16_t scd40_co2 = 0;
 float scd40_temp = 0.0, scd40_hum = 0.0;
 uint16_t sgp30_eco2 = 0, sgp30_tvoc = 0;
 int mhz16_co2 = 0;
-uint16_t pm1 = 0, pm2_5 = 0, pm10 = 0;
+extern uint16_t pm1, pm2_5, pm10;
+
 
 extern bool measurementActive;
 
@@ -138,7 +139,8 @@ void loop()
     scd30_co2, scd30_temp, scd30_hum,
     scd40_co2, scd40_temp, scd40_hum,
     sgp30_eco2, sgp30_tvoc,
-    mhz16_co2
+    mhz16_co2,
+    pm1, pm2_5, pm10
   );
 
   if (measurementActive) {
