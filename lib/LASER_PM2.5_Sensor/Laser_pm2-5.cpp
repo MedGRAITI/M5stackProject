@@ -27,7 +27,7 @@ bool readHM3301(uint16_t& pm1, uint16_t& pm2_5, uint16_t& pm10) {
     pm10 = (buffer[10] << 8) | buffer[11];
 
     Serial.printf("[HM3301] PM1.0: %u | PM2.5: %u | PM10: %u\n", pm1, pm2_5, pm10);
-    M5.Lcd.printf("[HM3301]\nPM1: %u\nPM2.5: %u\nPM10: %u\n\n", pm1, pm2_5, pm10);
+    //M5.Lcd.printf("[HM3301]\nPM1: %u\nPM2.5: %u\nPM10: %u\n\n", pm1, pm2_5, pm10);
 
     return true;
 }

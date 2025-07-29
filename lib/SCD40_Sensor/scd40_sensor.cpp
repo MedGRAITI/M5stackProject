@@ -30,11 +30,11 @@ bool readSCD40(uint16_t& co2, float& temp, float& humidity) {  // fonction de la
 
     if (error) {
         Serial.println("[SCD40] Read failed");
-        M5.Lcd.println("[SCD40] Failed\n");
+        //M5.Lcd.println("[SCD40] Failed\n");
         return false;
     } else {
         Serial.printf("[SCD40] CO2: %d ppm | Temp: %.2f °C | RH: %.2f %%\n", co2, temp, humidity);
-        M5.Lcd.printf("[SCD40]\nCO2: %d ppm\nTemp: %.2f °C\nRH: %.2f %%\n\n", co2, temp, humidity);
+        //M5.Lcd.printf("[SCD40]\nCO2: %d ppm\nTemp: %.2f °C\nRH: %.2f %%\n\n", co2, temp, humidity);
         return true;
     }
 }

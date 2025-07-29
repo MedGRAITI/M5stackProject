@@ -1,5 +1,9 @@
 #pragma once
-
+// organigramme de classe "diagramme"
+//classe mere 
+//classe affichage
+//classe capteur
+//avec une structure
 const char* htmlPage = R"rawliteral(
 <!DOCTYPE html>
 <html>
@@ -74,7 +78,7 @@ const char* htmlPage = R"rawliteral(
 </head>
 <body>
   <div class="header">
-    <img src="https://example.com/logo.png" alt="Logo" />
+    <img src="https://enscbp.bordeaux-inp.fr/sites/default/files/upload/logo_ims.png" alt="Logo" />
     <p id="datetime">📅 --/--/---- --:--</p>
   </div>
   <h1>Dashboard CO₂ – M5Stack</h1>
@@ -86,50 +90,69 @@ const char* htmlPage = R"rawliteral(
   </div>
 
   <div class="grid-container">
+    <!-- SCD30 -->
     <div>
-      <canvas id="scd30Chart"></canvas>
       <div style="text-align:center; font-weight:bold; margin-top:5px;">
         <span style="color:#00bfff;">🟦 CO₂ (ppm)</span> |
         <span style="color:#ff9900;">🟧 Température (°C)</span> |
-        <span style="color:#66ff66;">🟩 Humidité (%)</span>
+        <span style="color:#66ff66;">🟩 Humidité Relative (%)</span>
       </div>
-      <p id="scd30Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+    <canvas id="scd30Chart"></canvas>
+    <p id="scd30Value" style="text-align:center; font-weight:bold; margin: 8px 0;">--</p>
+    <div style="text-align:center;">
+      <button class="download-btn" onclick="downloadChartImage('scd30Chart', 'SCD30_chart')">📷 Télécharger PNG</button>
     </div>
+  </div>
 
+    <!-- SCD40 -->
     <div>
-      <canvas id="scd40Chart"></canvas>
       <div style="text-align:center; font-weight:bold; margin-top:5px;">
         <span style="color:#ffa500;">🟧 CO₂ (ppm)</span> |
         <span style="color:#ffcc00;">🟨 Température (°C)</span> |
-        <span style="color:#00cc66;">🟩 Humidité (%)</span>
+        <span style="color:#00cc66;">🟩 Humidité Relative (%)</span>
       </div>
-      <p id="scd40Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+      <canvas id="scd40Chart"></canvas>
+        <p id="scd40Value" style="text-align:center; font-weight:bold; margin: 8px 0;">--</p>
+    <div style="text-align:center;">
+      <button class="download-btn" onclick="downloadChartImage('scd40Chart', 'SCD40_chart')">📷 Télécharger PNG</button>
     </div>
+  </div>
 
+    <!-- SGP30 -->
     <div>
-      <canvas id="sgp30Chart"></canvas>
       <div style="text-align:center; font-weight:bold; margin-top:5px;">
         <span style="color:#32cd32;">🟩 eCO₂ (ppm)</span>
       </div>
-      <p id="sgp30Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+    <canvas id="sgp30Chart"></canvas>
+    <p id="sgp30Value" style="text-align:center; font-weight:bold; margin: 8px 0;">--</p>
+    <div style="text-align:center;">
+      <button class="download-btn" onclick="downloadChartImage('sgp30Chart', 'SGP30_chart')">📷 Télécharger PNG</button>
     </div>
+  </div>
 
+    <!-- MH-Z16 -->
     <div>
-      <canvas id="mhz16Chart"></canvas>
       <div style="text-align:center; font-weight:bold; margin-top:5px;">
         <span style="color:#ff69b4;">🟪 MH-Z16 CO₂ (ppm)</span>
       </div>
-      <p id="mhz16Value" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+      <canvas id="mhz16Chart"></canvas>
+        <p id="mhz16Value" style="text-align:center; font-weight:bold; margin: 8px 0;">--</p>
+        <div style="text-align:center;">
+        <button class="download-btn" onclick="downloadChartImage('mhz16Chart', 'MHZ16_chart')">📷 Télécharger PNG</button>
     </div>
+  </div>
 
+    <!-- PM Sensor -->
     <div>
-      <canvas id="pmChart"></canvas>
       <div style="text-align:center; font-weight:bold; margin-top:5px;">
         <span style="color:#ff0000;">🟥 PM1</span> |
         <span style="color:#00ff00;">🟩 PM2.5</span> |
         <span style="color:#0000ff;">🟦 PM10</span>
       </div>
-      <p id="pmValue" style="text-align:center;margin-top:5px;font-weight:bold;">--</p>
+      <canvas id="pmChart"></canvas>
+      <p id="pmValue" style="text-align:center; font-weight:bold; margin: 8px 0;">--</p>
+       <div style="text-align:center;">
+      <button class="download-btn" onclick="downloadChartImage('pmChart', 'PM_chart')">📷 Télécharger PNG</button>
     </div>
   </div>
 
@@ -149,12 +172,36 @@ function stopMeasurement() {
   fetch('/stop').then(() => alert("Mesure arrêtée !"));
 }
 function downloadCSV() {
-  window.open('/download', '_blank');
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10); 
+  const timeStr = now.toTimeString().slice(0,5).replace(":", "h"); 
+  const filename = `Mesure_${dateStr}_${timeStr}.csv`;
+
+  fetch('/download')
+    .then(response => response.blob())
+    .then(blob => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    })
+    .catch(err => alert("Erreur de téléchargement : " + err));
 }
+
 function resetCSV() {
   if (confirm("Réinitialiser le fichier CSV ?")) {
     fetch('/reset').then(() => alert("CSV réinitialisé !"));
   }
+}
+
+function downloadChartImage(canvasId, filename) {
+  const canvas = document.getElementById(canvasId);
+  const link = document.createElement('a');
+  link.download = filename + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 }
 
 function createMultiChart(ctx, labels, colors, yTitle) {

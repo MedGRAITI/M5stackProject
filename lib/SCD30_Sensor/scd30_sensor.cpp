@@ -29,7 +29,7 @@ bool readSCD30(float& co2, float& temperature, float& humidity) { //fonction de 
   int16_t error = scd30.readMeasurementData(co2, temperature, humidity);
   if (error == 0 && co2 > 0 && co2 < 10000) {
     Serial.printf("[SCD30] CO2: %.1f ppm | Temp: %.1f C | RH: %.1f %%\n", co2, temperature, humidity);
-    M5.Lcd.printf("[SCD30]\nCO2: %.1f ppm\nTemp: %.1f C\nRH: %.1f %%\n\n", co2, temperature, humidity);
+    //M5.Lcd.printf("[SCD30]\nCO2: %.1f ppm\nTemp: %.1f C\nRH: %.1f %%\n\n", co2, temperature, humidity);
     return true;
   }
   return false;
